@@ -1,0 +1,120 @@
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+from logging.config import fileConfig
+
+from alembic import context
+
+from sqlalchemy import pool
+from sqlalchemy.engine import Connection
+from sqlalchemy.ext.asyncio import async_engine_from_config
+
+
+# ─────────────────────────────────────────────
+# FIX: добавляем корень проекта в PYTHONPATH
+# ─────────────────────────────────────────────
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
+
+
+# ─────────────────────────────────────────────
+# теперь можно импортировать app
+# ─────────────────────────────────────────────
+
+from app.core.config import settings
+from app.database.base import Base
+import app.database.models  # важно: регистрирует все модели
+
+
+# ─────────────────────────────────────────────
+# Alembic config
+# ─────────────────────────────────────────────
+
+config = context.config
+
+config.set_main_option(
+    "sqlalchemy.url",
+    settings.DATABASE_URL
+)
+
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+target_metadata = Base.metadata
+
+
+# ─────────────────────────────────────────────
+# OFFLINE MODE
+# ─────────────────────────────────────────────
+
+def run_migrations_offline() -> None:
+    url = config.get_main_option("sqlalchemy.url")
+
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        compare_type=True,
+        compare_server_default=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+# ─────────────────────────────────────────────
+# SYNC EXECUTION (used by async engine)
+# ─────────────────────────────────────────────
+
+def do_run_migrations(connection: Connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_type=True,
+        compare_server_default=True,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+# ─────────────────────────────────────────────
+# ONLINE MODE (ASYNC)
+# ─────────────────────────────────────────────
+
+async def run_migrations_online() -> None:
+    configuration = config.get_section(
+        config.config_ini_section,
+        {}
+    )
+
+    connectable = async_engine_from_config(
+        configuration,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+
+    await connectable.dispose()
+
+
+# ─────────────────────────────────────────────
+# ENTRY POINT
+# ─────────────────────────────────────────────
+
+def main() -> None:
+    import asyncio
+
+    if context.is_offline_mode():
+        run_migrations_offline()
+    else:
+        asyncio.run(run_migrations_online())
+
+
+main()

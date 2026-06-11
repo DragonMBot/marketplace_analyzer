@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Market Analyzer</title>
+
+    <style>
+        body {
+            width: 380px;
+            min-height: 500px;
+            padding: 12px;
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        .product-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 10px;
+        }
+
+        .delete-btn {
+            background: #d9534f;
+            color: white;
+            border: none;
+        }
+
+        #message {
+            margin-top: 10px;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+
+<div id="authSection">
+
+    <h2>Market Analyzer</h2>
+
+    <input
+        type="email"
+        id="email"
+        placeholder="Email"
+    >
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Пароль"
+    >
+
+    <button id="loginBtn">
+        Войти
+    </button>
+
+    <button id="registerBtn">
+        Регистрация
+    </button>
+
+</div>
+
+<div id="appSection" class="hidden">
+
+    <h2>Мои товары</h2>
+
+    <input
+        type="text"
+        id="productId"
+        placeholder="ID товара Ozon"
+    >
+
+    <button id="addProductBtn">
+        Добавить товар
+    </button>
+
+    <button id="logoutBtn">
+        Выйти
+    </button>
+
+    <hr>
+
+    <div id="productsList"></div>
+
+</div>
+
+<div id="message"></div>
+
+<script src="popup.js"></script>
+
+</body>
+</html>
